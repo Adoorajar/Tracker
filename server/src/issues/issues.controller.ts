@@ -1,16 +1,20 @@
 import { Controller, Get, Post, Param, Body, Put, Delete, Query } from '@nestjs/common';
+import { IssuesService } from './issues.service';
 import { IssueDto } from './dto/issue.dto';
+import { Issue } from './schemas/issue.schema';
 
 @Controller('issues')
 export class IssuesController {
+    constructor(private readonly issuesService: IssuesService) {}
+
     @Post()
-    async create(@Body() createIssueDto: IssueDto) {
-        return 'This action creates a new issue';
+    async create(@Body() issueDto: IssueDto) {
+        await this.issuesService.create(issueDto);
     }
 
     @Get()
-    findAll(@Query() query: IssueDto) {
-        return 'This action returns all issues';
+    async findAll(@Query() query: IssueDto) {
+        return this.issuesService.findAll();
     }
 
     @Get(':id')
