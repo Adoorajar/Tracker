@@ -6,13 +6,15 @@ import { IssuesModule } from './issues/issues.module';
 import { IssuesController } from './issues/issues.controller';
 import { ProjectsController } from './projects/projects.controller';
 import { ProjectsService } from './projects/projects.service';
+import { ProjectsModule } from './projects/projects.module';
 
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost/tracker'),
     IssuesModule,
+    ProjectsModule,
   ],
-  controllers: [AppController, ProjectsController],
-  providers: [AppService, ProjectsService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

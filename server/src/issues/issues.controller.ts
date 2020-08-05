@@ -8,28 +8,28 @@ export class IssuesController {
     constructor(private readonly issuesService: IssuesService) {}
 
     @Post()
-    async create(@Body() issueDto: IssueDto) {
+    async create(@Body() issueDto: IssueDto): Promise<void> {
         await this.issuesService.create(issueDto);
     }
 
     @Get()
-    async findAll(@Query() query: IssueDto) {
+    async findAll(@Query() query: IssueDto): Promise<Issue[]> {
         return this.issuesService.findAll();
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id') id: string): string {
         console.log(id);
         return `This action returns the issue with id: ${id}`;
     }
 
     @Put(':id')
-    update(@Param('id') id: string, @Body() updateIssueDto: IssueDto) {
+    update(@Param('id') id: string, @Body() issueDto: IssueDto): string {
         return `This action updates a #${id} issue`;
     }
 
     @Delete(':id')
-    remove(@Param('id') id: string) {
+    remove(@Param('id') id: string): string {
         return `This action remove a #${id} issue`;
     }
 }
