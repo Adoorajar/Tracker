@@ -8,9 +8,14 @@ import { ProjectsController } from './projects/projects.controller';
 import { ProjectsService } from './projects/projects.service';
 import { ProjectsModule } from './projects/projects.module';
 
+const uri = 'mongodb://localhost/tracker';
+const options = {
+  useCreateIndex: true
+};
+
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost/tracker'),
+    MongooseModule.forRoot(uri, options),
     IssuesModule,
     ProjectsModule,
   ],

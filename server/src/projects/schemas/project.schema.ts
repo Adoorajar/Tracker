@@ -3,10 +3,10 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Project extends Document {
-    @Prop()
+    @Prop({ unique: true })
     name: string;
 
-    @Prop()
+    @Prop({ unique: true, partialFilterExpression: { key: { $exists: true } } })
     key: string;
 
     @Prop()
