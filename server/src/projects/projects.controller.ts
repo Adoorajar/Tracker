@@ -17,10 +17,10 @@ export class ProjectsController {
         return this.projectsService.findAll();
     }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        console.log(id);
-        return `This action returns the project with id: ${id}`;
+    @Get(':name')
+    findOne(@Param('name') name: string) {
+        console.log(name);
+        return this.projectsService.findOne(name);
     }
 
     @Put(':id')

@@ -3,9 +3,6 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Issue extends Document {
-    @Prop()
-    name: string;
-
     @Prop() 
     project: string;
 
@@ -14,6 +11,9 @@ export class Issue extends Document {
 
     @Prop()
     description: string;
+
+    @Prop()
+    status: string;
 }
 
 export const IssueSchema = SchemaFactory.createForClass(Issue);

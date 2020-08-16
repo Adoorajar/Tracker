@@ -16,4 +16,8 @@ export class ProjectsService {
     async findAll(): Promise<Project[]> {
         return this.projectModel.find().exec();
     }
+
+    async findOne(name: string): Promise<Project> {
+        return this.projectModel.findOne({ name: name }).exec();
+    }
 }
