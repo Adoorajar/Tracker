@@ -14,9 +14,18 @@ export class IssuesService {
         ) {} 
 
     async create(issueDto: IssueDto): Promise<Issue> {
+        console.log(`incoming issue is: ${JSON.stringify(issueDto)}`);
         
-        const createdIssue = new this.issueModel(issueDto);
         const foundProject = await this.findProject(issueDto.project);
+        const issueKey = `${foundProject.key}-${foundProject.issues.length + 1}`
+        const issueObject = {
+            key: issueKey,
+            ...issueDto
+        }
+        console.log(`issueObject is: ${JSON.stringify(issueObject)}`);
+        console.log(`found project is: ${JSON.stringify(foundProject)}`);
+        console.log(`issues count is: ${JSON.stringify(foundProject.issues.length)}`);
+        const createdIssue = new this.issueModel(issueObject);
         foundProject.issues.push(createdIssue);
         //foundProject.issues.push(createdIssue);
         foundProject.save();

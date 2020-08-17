@@ -3,6 +3,9 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Issue extends Document {
+    @Prop()
+    key: string;
+
     @Prop() 
     project: string;
 
