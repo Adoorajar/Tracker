@@ -8,8 +8,8 @@ export class IssuesController {
     constructor(private readonly issuesService: IssuesService) {}
 
     @Post()
-    async create(@Body() issueDto: IssueDto): Promise<void> {
-        await this.issuesService.create(issueDto);
+    async create(@Body() issueDto: IssueDto) {
+        return this.issuesService.create(issueDto);
     }
 
     @Get()

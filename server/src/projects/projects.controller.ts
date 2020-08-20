@@ -9,7 +9,7 @@ export class ProjectsController {
 
     @Post()
     async create(@Body() projectDto: ProjectDto) {
-        await this.projectsService.create(projectDto);
+        return this.projectsService.create(projectDto);
     }
 
     @Get()
