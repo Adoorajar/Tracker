@@ -58,6 +58,23 @@ export class IssuesService implements IssuesServiceResponse {
         }
     }
 
+    async updateStatus(id: string, status: string): Promise<UpdateIssueResponse> {
+        const query = { _id: id };
+        const updateStatusResult = await this.issueModel.findOneAndUpdate(query, { status: status }).exec();
+        switch (updateStatusResult) {
+            case null:
+                const updateStatusFailure = {
+                    status: "failed"
+                }
+                return updateStatusFailure;
+            default:
+                const updateStatusSuccess = {
+                    status: "success"
+                }
+                return updateStatusSuccess;
+        }
+    }
+
     async findAll(): Promise<Issue[]> {
         return this.issueModel.find().exec();
     }
@@ -66,6 +83,7 @@ export class IssuesService implements IssuesServiceResponse {
 interface IssuesServiceResponse {
     create(s: IssueDto): Promise<CreateIssueResponse>;
     findOne(s: string): Promise<FindIssueResponse>;
+    updateStatus(s: string, t: string): Promise<UpdateIssueResponse>;
 }
 
 type CreateIssueResponse = {
@@ -77,6 +95,10 @@ type CreateIssueResponse = {
 type FindIssueResponse = {
     status: string,
     issue?: Issue
+}
+
+type UpdateIssueResponse = {
+    status: string
 }
 
 

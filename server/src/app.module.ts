@@ -10,7 +10,8 @@ import { ProjectsModule } from './projects/projects.module';
 
 const uri = 'mongodb://localhost/tracker';
 const options = {
-  useCreateIndex: true
+  useCreateIndex: true,
+  useFindAndModify: false
 };
 
 @Module({

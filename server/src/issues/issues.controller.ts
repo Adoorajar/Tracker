@@ -22,9 +22,9 @@ export class IssuesController {
         return this.issuesService.findOne(key);
     }
 
-    @Put(':id')
-    update(@Param('id') id: string, @Body() issueDto: IssueDto): string {
-        return `This action updates a #${id} issue`;
+    @Put(':id/:status')
+    update(@Param('id') id: string, @Param('status') status: string) {
+        return this.issuesService.updateStatus(id, status);
     }
 
     @Delete(':id')
