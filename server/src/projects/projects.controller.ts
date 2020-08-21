@@ -19,7 +19,6 @@ export class ProjectsController {
 
     @Get(':name')
     findOne(@Param('name') name: string) {
-        console.log(name);
         return this.projectsService.findOne(name);
     }
 

@@ -46,7 +46,6 @@ export class ProjectsService implements ProjectsServiceResponse {
     }
 
     async findOne(name: string): Promise<FindProjectResponse> {
-        //return this.projectModel.findOne({ name: name }).exec();
         const project = await this.projectModel.findOne({ name: name }).exec();
         switch (project) {
             case null:

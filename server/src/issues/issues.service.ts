@@ -3,36 +3,25 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Issue } from './schemas/issue.schema';
 import { IssueDto } from './dto/issue.dto';
-import { Project } from '../projects/schemas/project.schema';
-import { ProjectDto } from '../projects/dto/project.dto';
 import { ProjectsService } from '../projects/projects.service';
-import { create } from 'domain';
 
 @Injectable()
 export class IssuesService implements IssuesServiceResponse {
     constructor(
         @InjectModel(Issue.name) private issueModel: Model<Issue>,
-        //@InjectModel(Project.name) private projectModel: Model<Project>
         private readonly projectsService: ProjectsService
         ) {} 
 
     async create(issueDto: IssueDto): Promise<CreateIssueResponse> {
-        console.log(`incoming issue is: ${JSON.stringify(issueDto)}`);
-        
         const projectResponse = await this.projectsService.findOne(issueDto.project);
         switch (projectResponse.status) {
             case "success":
                 const project = projectResponse.project;
-                console.log(`found project is: ${JSON.stringify(project)}`);
-
                 const issueKey = `${project.name}-${project.issues.length + 1}`
                 const issueObject = {
                     key: issueKey,
                     ...issueDto
                 }
-                console.log(`issueObject is: ${JSON.stringify(issueObject)}`);
-                
-                console.log(`issues count is: ${JSON.stringify(project.issues.length)}`);
                 const createdIssue = new this.issueModel(issueObject);
                 project.issues.push(createdIssue);
                 project.save();
@@ -52,6 +41,23 @@ export class IssuesService implements IssuesServiceResponse {
         
     }
 
+    async findOne(key: string): Promise<FindIssueResponse> {
+        const issue = await this.issueModel.findOne({ key: key }).exec();
+        switch (issue) {
+            case null:
+                const findIssueFailure = {
+                    status: "failed"
+                }
+                return findIssueFailure;
+            default:
+                const findIssueSuccess = {
+                    status: "success",
+                    issue: issue
+                }
+                return findIssueSuccess;
+        }
+    }
+
     async findAll(): Promise<Issue[]> {
         return this.issueModel.find().exec();
     }
@@ -59,11 +65,17 @@ export class IssuesService implements IssuesServiceResponse {
 
 interface IssuesServiceResponse {
     create(s: IssueDto): Promise<CreateIssueResponse>;
+    findOne(s: string): Promise<FindIssueResponse>;
 }
 
 type CreateIssueResponse = {
     status: string,
     message?: string,
+    issue?: Issue
+}
+
+type FindIssueResponse = {
+    status: string,
     issue?: Issue
 }
 

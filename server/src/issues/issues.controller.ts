@@ -17,10 +17,9 @@ export class IssuesController {
         return this.issuesService.findAll();
     }
 
-    @Get(':id')
-    findOne(@Param('id') id: string): string {
-        console.log(id);
-        return `This action returns the issue with id: ${id}`;
+    @Get(':key')
+    findOne(@Param('key') key: string) {
+        return this.issuesService.findOne(key);
     }
 
     @Put(':id')
