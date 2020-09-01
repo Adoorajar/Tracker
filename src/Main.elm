@@ -1,79 +1,127 @@
 module Main exposing (main) 
-import Route
 
-import Browser 
+import Route
+import Browser exposing (Document) 
 import Browser.Navigation as Nav
 import Html exposing (Html, li, a, b, text, ul) 
 import Html.Attributes exposing (href)
+import Json.Decode as Decode exposing (Value)
 import Url
-import Route exposing (Route)
+import Route exposing (Route) 
+import Page exposing (Page) 
+import Page.Home as Home 
+import Page.Project as Project 
+import Page.Issue as Issue 
+import Page.Blank as Blank
+import Page.NotFound as NotFound 
+import Session exposing (Session) 
 
  -- MODEL 
 
-type alias Model = 
-    { route : Route
-    , key : Nav.Key 
-    , url : Url.Url 
-    } 
-
-type CurrentPage 
-    = HomePage 
-    | ProjectPage
-    | IssuePage 
-
+type Model
+    = Redirect Session 
+    | NotFound Session
+    | Home Home.Model 
+    | Project Project.Model 
+    | Issue Issue.Model 
 
 -- INIT 
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init flags url key = 
-    ( Model (Route.fromUrl url) key url, Cmd.none )
-    -- changeRouteTo (Route.fromUrl url)
-
-
-
+init : Value -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url navKey = 
+    changeRouteTo (Route.fromUrl url)
+        (Redirect (Session.decode navKey flags))
 
 
 type Msg 
-    = LinkClicked Browser.UrlRequest 
+    = Ignored
+    | LinkClicked Browser.UrlRequest 
     | UrlChanged Url.Url  
+    | GotHomeMsg Home.Msg 
+    | GotProjectMsg Project.Msg
+    | GotIssueMsg Issue.Msg 
 
+toSession : Model -> Session 
+toSession page = 
+    case page of 
+        Redirect session -> 
+            session 
+
+        NotFound session -> 
+            session
+
+        Home home -> 
+            Home.toSession home 
+
+        Project project -> 
+            Project.toSession project 
+
+        Issue issue -> 
+            Issue.toSession issue 
+
+changeRouteTo : Route -> Model -> ( Model, Cmd Msg ) 
+changeRouteTo route model = 
+    let
+        session = 
+            toSession model 
+    in
+    case route of 
+        Route.NotFound -> 
+            ( NotFound session, Cmd.none )
+
+        Route.Home -> 
+            Home.init session
+                |> updateWith Home GotHomeMsg model 
+
+        Route.Project -> 
+            Project.init session 
+                |> updateWith Home GotProjectMsg model 
+
+        Route.Issue -> 
+            Issue.init session 
+                |> updateWith Home GotIssueMsg model 
 
  -- UPDATE 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
-    case msg of 
-        LinkClicked urlRequest -> 
+    case ( msg, model ) of 
+        ( Ignored, _ ) -> 
+            ( model, Cmd.none )
+
+        ( LinkClicked urlRequest, _ ) -> 
             case urlRequest of 
                 Browser.Internal url -> 
-                    ( model, Nav.pushUrl model.key (Url.toString url) )
+                    ( model, Nav.pushUrl (Session.navKey (toSession model)) (Url.toString url) )
 
                 Browser.External href -> 
                     ( model, Nav.load href ) 
 
-        UrlChanged url -> 
-            ( { model | route = Route.fromUrl url
-            , url = url } 
-            , Cmd.none 
-            )
+        ( UrlChanged url, _ ) -> 
+            changeRouteTo (Route.fromUrl url) model
 
+        ( GotHomeMsg subMsg, Home home ) ->
+            Home.update subMsg home
+                |> updateWith Home GotHomeMsg model 
 
--- changeRouteTo: Maybe Route -> ( Model, Cmd Msg )
--- changeRouteTo maybeRoute = 
---     case maybeRoute of 
---         Nothing -> 
---             (Model maybeRoute key url, Cmd.none ) 
+        ( GotProjectMsg subMsg, Project project ) ->
+            Project.update subMsg project
+                |> updateWith Project GotProjectMsg model
 
---         Just Route.Home -> 
---             (Model maybeRoute key url, Cmd.none ) 
+        ( GotIssueMsg subMsg, Issue issue ) ->
+            Issue.update subMsg issue
+                |> updateWith Issue GotIssueMsg model 
 
---         Just Route.Project -> 
---             (Model maybeRoute key url, Cmd.none )
+        ( _, _ ) ->
+            -- Disregard messages that arrived for the wrong page.
+            ( model, Cmd.none )
 
---         Just Route.Issue -> 
---             (Model maybeRoute key url, Cmd.none )
-
-        
+updateWith : (subModel -> Model) -> (subMsg -> Msg) -> Model -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
+updateWith toModel toMsg model ( subModel, subCmd ) =
+    ( toModel subModel
+    , Cmd.map toMsg subCmd
+    )
+       
 
  -- SUBSCRIPTIONS
 
@@ -84,21 +132,34 @@ subscriptions model =
 
  -- VIEW 
 
-view : Model -> Browser.Document Msg 
+view : Model -> Document Msg 
 view model = 
-    { title = "Tracker" 
-    , body = 
-        [ text "The current URL is: " 
-        , b [] [ text (Url.toString model.url) ] 
-        , ul [] 
-            [ viewLink "/home" 
-            , viewLink "/project"
-            , viewLink "/issue"
-            ]
-        , text "The current route is: " 
-        , viewRoute model.route
-        ]   
-    }
+    let
+        viewPage page config = 
+            let
+                { title, body } = 
+                    Page.view page config
+            in
+            { title = title 
+            , body = body 
+            }
+    in
+    case model of 
+        Redirect _ -> 
+            viewPage Page.Other Blank.view 
+
+        NotFound _ -> 
+            viewPage Page.Other NotFound.view 
+            
+        Home home -> 
+            viewPage Page.Home (Home.view home) 
+
+        Project project -> 
+            viewPage Page.Project (Project.view project)
+
+        Issue issue -> 
+            viewPage Page.Issue (Issue.view issue)
+
 
 viewLink : String -> Html msg 
 viewLink path = 
@@ -122,7 +183,7 @@ viewRoute route =
 -- MAIN 
 
 
-main : Program () Model Msg  
+main : Program Value Model Msg  
 main = 
     Browser.application
         { init = init 
