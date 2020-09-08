@@ -1,12 +1,14 @@
 module Page.Issue exposing (Model, Msg, init, update, toSession, view) 
 
-import Html exposing (Html, h3, div, li, text, ul)
+import Html exposing (Html, h3, div, li, text, ul) 
+import Json.Decode as Decode exposing (Decoder)
 import Session exposing (Session) 
-import Issue exposing (Issue)
+import Issue exposing (Issue) 
+import Http 
 
 type alias Model = 
-    { content : String 
-    , session : Session
+    { session : Session
+    , issues : Status (List Issue)
     } 
 
 type Status a
@@ -14,61 +16,70 @@ type Status a
     | Loaded a
     | Failed
 
-init : Session -> ( Model, Cmd msg ) 
+init : Session -> ( Model, Cmd Msg ) 
 init session = 
-    ( { content = "This is the issue page" 
-    , session = session
-    }, Cmd.none )
+    ( { session = session
+    , issues = Loading
+    }, getIssues )
 
-view : Model -> { title : String, content : Html msg } 
+view : Model -> { title : String, content : Html Msg } 
 view model = 
-    { title = "Issues" 
-    , content = 
-        div [] 
-            [ text model.content 
-            ]
-    }
-
-viewIssuesList : Status (List Issue) -> Html msg 
-viewIssuesList status = 
-    case status of 
+    case model.issues of 
         Loaded issues -> 
-            div [] 
-                [ h3 [] [ text "Issues" ]
-                , ul [] 
-                    (List.map (\issue -> displayIssueLink issue) issues)
-                ]
+            { title = "Issues" 
+            , content = 
+                div [] 
+                    [ viewIssuesList issues
+                    ]
+            }
 
         Loading -> 
-            div [] 
-                [ h3 [] [ text "Issues - Loading..." ]
-                
-                ]
-
+            { title = "Issues" 
+            , content = 
+                div [] 
+                    [ h3 [] [ text "Issues - Loading..." ]
+                    ]
+            }
+            
         Failed -> 
-            div [] 
-                [ h3 [] [ text "Issues - Loading failed" ]
-                
-                ]
+            { title = "Issues" 
+            , content = 
+                div [] 
+                    [ h3 [] [ text "Issues - Loading failed" ]
+                    ]
+            }
 
-displayIssueLink : Issue -> Html msg 
+viewIssuesList : List Issue -> Html Msg 
+viewIssuesList issues = 
+    div [] 
+        [ h3 [] [ text "Issues" ]
+        , ul [] 
+            (List.map (\issue -> displayIssueLink issue) issues)
+        ]
+
+displayIssueLink : Issue -> Html Msg 
 displayIssueLink issue = 
     li [] [ text (Issue.key issue) ]
 
 -- UPDATE 
 
 type Msg 
-    = GenericMsg 
-    | GotSession Session
+    = GotSession Session
+    | GotIssues (Result Http.Error (List Issue))
 
 update : Msg -> Model -> ( Model, Cmd Msg ) 
 update msg model = 
     case msg of 
-        GenericMsg -> 
-           ( { model | content = "This is now generic message issue page" }, Cmd.none ) 
-
         GotSession session -> 
             ( { model | session = session }, Cmd.none ) 
+
+        GotIssues result -> 
+            case result of 
+                Ok issues -> 
+                    ( { model | issues = Loaded issues }, Cmd.none ) 
+
+                Err _ -> 
+                    ( { model | issues = Failed }, Cmd.none ) 
 
 
 
@@ -77,3 +88,18 @@ update msg model =
 toSession : Model -> Session 
 toSession model = 
     model.session 
+
+
+
+-- HTTP 
+
+getIssues : Cmd Msg 
+getIssues = 
+    Http.get 
+        { url = "http://localhost:3000/issues"
+        , expect = Http.expectJson GotIssues getIssuesResultsDecoder
+        }
+
+getIssuesResultsDecoder : Decoder (List Issue) 
+getIssuesResultsDecoder = 
+    Decode.list Issue.issueDecoder 
