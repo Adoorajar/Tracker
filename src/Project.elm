@@ -18,7 +18,7 @@ type Project
 type alias Internals = 
     { name: String
     , description: String
-    , issues: List Issue 
+    , issues: List String 
     }
 
 -- INFO 
@@ -31,7 +31,7 @@ description : Project -> String
 description (Project internals) = 
     internals.description 
 
-issues : Project -> List Issue 
+issues : Project -> List String 
 issues (Project internals) = 
     internals.issues 
 
@@ -48,6 +48,7 @@ internalsDecoder =
         (Decode.field "description" Decode.string)
         (Decode.field "issues" issuesListDecoder)
 
-issuesListDecoder : Decoder (List Issue) 
+issuesListDecoder : Decoder (List String) 
 issuesListDecoder = 
-    Decode.list Issue.issueDecoder
+    -- Decode.list Issue.issueDecoder
+    Decode.list Decode.string

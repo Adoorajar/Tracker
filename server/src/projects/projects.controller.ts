@@ -9,6 +9,7 @@ export class ProjectsController {
 
     @Post()
     async create(@Body() projectDto: ProjectDto) {
+        console.log(`In projects, projectDto is ${JSON.stringify(projectDto)}`);
         return this.projectsService.create(projectDto);
     }
 

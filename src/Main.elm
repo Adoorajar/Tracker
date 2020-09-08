@@ -75,11 +75,11 @@ changeRouteTo route model =
 
         Route.Project -> 
             Project.init session 
-                |> updateWith Home GotProjectMsg model 
+                |> updateWith Project GotProjectMsg model 
 
         Route.Issue -> 
             Issue.init session 
-                |> updateWith Home GotIssueMsg model 
+                |> updateWith Issue GotIssueMsg model 
 
  -- UPDATE 
 
@@ -135,30 +135,30 @@ subscriptions model =
 view : Model -> Document Msg 
 view model = 
     let
-        viewPage page config = 
+        viewPage page toMsg config = 
             let
                 { title, body } = 
                     Page.view page config
             in
             { title = title 
-            , body = body 
+            , body = List.map (Html.map toMsg) body 
             }
     in
     case model of 
         Redirect _ -> 
-            viewPage Page.Other Blank.view 
+            viewPage Page.Other (\_ -> Ignored) Blank.view 
 
         NotFound _ -> 
-            viewPage Page.Other NotFound.view 
+            viewPage Page.Other (\_ -> Ignored) NotFound.view 
             
         Home home -> 
-            viewPage Page.Home (Home.view home) 
+            viewPage Page.Home GotHomeMsg (Home.view home) 
 
         Project project -> 
-            viewPage Page.Project (Project.view project)
+            viewPage Page.Project GotProjectMsg (Project.view project)
 
         Issue issue -> 
-            viewPage Page.Issue (Issue.view issue)
+            viewPage Page.Issue GotIssueMsg (Issue.view issue)
 
 
 viewLink : String -> Html msg 

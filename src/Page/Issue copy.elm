@@ -5,7 +5,10 @@ import Session exposing (Session)
 import Issue exposing (Issue)
 
 type alias Model = 
-    { content : String 
+    { content : 
+        { initMsg : String
+        , issues : Status (List Issue)
+        }  
     , session : Session
     } 
 
@@ -16,7 +19,10 @@ type Status a
 
 init : Session -> ( Model, Cmd msg ) 
 init session = 
-    ( { content = "This is the issue page" 
+    ( { content = 
+        { initMsg = "This is the issue page" 
+        , issues = Loaded []
+        }
     , session = session
     }, Cmd.none )
 
@@ -25,7 +31,8 @@ view model =
     { title = "Issues" 
     , content = 
         div [] 
-            [ text model.content 
+            [ text model.content.initMsg 
+            , viewIssuesList model.content.issues
             ]
     }
 
@@ -65,7 +72,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
     case msg of 
         GenericMsg -> 
-           ( { model | content = "This is now generic message issue page" }, Cmd.none ) 
+           ( { model | content = { initMsg = "This is now generic message issue page", issues = model.content.issues } }, Cmd.none ) 
 
         GotSession session -> 
             ( { model | session = session }, Cmd.none ) 
