@@ -17,6 +17,11 @@ export class IssuesController {
         return this.issuesService.findAll();
     }
 
+    @Get(':project/:name')
+    findAllForProject(@Param('name') name: string) {
+        return this.issuesService.findAllForProject(name);
+    }
+
     @Get(':key')
     findOne(@Param('key') key: string) {
         return this.issuesService.findOne(key);

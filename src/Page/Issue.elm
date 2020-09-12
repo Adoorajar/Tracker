@@ -100,6 +100,7 @@ getIssues =
         , expect = Http.expectJson GotIssues getIssuesResultsDecoder
         }
 
+
 getIssuesResultsDecoder : Decoder (List Issue) 
 getIssuesResultsDecoder = 
     Decode.list Issue.issueDecoder 

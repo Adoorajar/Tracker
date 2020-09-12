@@ -78,6 +78,10 @@ export class IssuesService implements IssuesServiceResponse {
     async findAll(): Promise<Issue[]> {
         return this.issueModel.find().exec();
     }
+
+    async findAllForProject(name: string): Promise<Issue[]> {
+        return this.issueModel.find({ project: name }).exec();
+    }
 }
 
 interface IssuesServiceResponse {
