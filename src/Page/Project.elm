@@ -29,41 +29,35 @@ init session =
 
 view : Model -> { title : String, content : Html Msg } 
 view model = 
-    case model.projects of 
+    { title = "Projects" 
+    , content = 
+        div [] 
+            [ viewProjectsList model.projects
+            , viewProject model.project
+            , viewProjectIssues model.projectIssues
+            ]
+    }
+            
+
+viewProjectsList : Status (List Project) -> Html Msg 
+viewProjectsList status = 
+    case status of 
         Loaded projects -> 
-            { title = "Projects" 
-            , content = 
-                div [] 
-                    [ viewProjectsList projects
-                    , viewProject model.project
-                    , viewProjectIssues model.projectIssues
-                    ]
-            }
+            div [] 
+                [ h3 [] [ text "Projects" ]
+                , ul [] 
+                    (List.map (\project -> displayProjectLink project) projects)
+                ] 
 
         Loading -> 
-            { title = "Projects" 
-            , content = 
-                div [] 
-                    [ h3 [] [ text "Projects - Loading..." ]
-                    ]
-            }
-            
-        Failed -> 
-            { title = "Projects" 
-            , content = 
-                div [] 
-                    [ h3 [] [ text "Projects - Loading failed" ]
-                    ]
-            }
-            
+            div [] 
+                [ h3 [] [ text "Projects - Loading..." ]
+                ] 
 
-viewProjectsList : List Project -> Html Msg 
-viewProjectsList projects = 
-    div [] 
-        [ h3 [] [ text "Projects" ]
-        , ul [] 
-            (List.map (\project -> displayProjectLink project) projects)
-        ]
+        Failed -> 
+            div [] 
+                [ h3 [] [ text "Projects - Loading failed" ]
+                ]
 
 
 displayProjectLink : Project -> Html Msg 

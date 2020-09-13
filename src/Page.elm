@@ -44,9 +44,9 @@ viewFooter : Html msg
 viewFooter = 
     footer [] 
         [ div [ class "container" ]
-            [ a [ class "logo-font", href "/" ] [ text "Tracker" ]
+            [ a [ class "logo-font", href "/" ] [ text "Tracker " ]
             , span [] 
-                [ text "An issue tracker, Code & Design licensed under GNU GENERAL PUBLIC LICENSE." ]
+                [ text " An issue tracker, Code & Design licensed under GNU GENERAL PUBLIC LICENSE." ]
             ]
         ] 
 
